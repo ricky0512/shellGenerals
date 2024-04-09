@@ -1,0 +1,2 @@
+# shellGenerals
+shell script notes
