@@ -1,0 +1,20 @@
+#!/bin/sh
+# update DDNS records with curl using cloudflare API
+# input: zoneID, FQDN, APIToken, get internet IP addr.
+# output: none but DNS record update dynamicly
+# pre-requirements: config cloudflare API token
+# post-requirement: config crontab to update DDNS regularly
+# usage: updateCfDDNS zoneID FQDN APIToken
+
+if [ -z $1 ]
+        then
+                echo "please provide zoneId, fqdn, apiToken, thank you..."
+else
+
+MYIP=`curl https://ipinfo.io/ip`
+
+RECID=`curl -X GET "https://api.cloudflare.com/client/v4/zones/${1}/dns_records?name=${2}" -H "Authorization:Bearer ${3}" -H "Content-Type: application/json" | jq -r ".result[] | select(.name == (\"${2}\")) | .id"`
+
+curl -X PUT "https://api.cloudflare.com/client/v4/zones/${1}/dns_records/${RECID}" -H "Authorization: Bearer ${3}" -H "Content-Type: application/json" --data '{"type":"A","name":"'${2}'","content":"'${MYIP}'","ttl":120,"proxied":false}'
+
+fi
